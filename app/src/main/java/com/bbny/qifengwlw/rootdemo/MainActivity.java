@@ -2,6 +2,10 @@ package com.bbny.qifengwlw.rootdemo;
 
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
+import android.util.Log;
+import android.view.View;
+import android.widget.EditText;
+import android.widget.Toast;
 
 import java.io.DataOutputStream;
 import java.io.IOException;
@@ -41,15 +45,38 @@ public class MainActivity extends AppCompatActivity {
 
 //        RootUtils.execRootCmd("chmod u-x /test/rr11.txt");//设置文件权限
 //        RootUtils.execRootCmd("touch /test/rr22.txt");//以vim方式进行打开或创建 测试不出来 touch 可以创建一个新文件
-        RootUtils.execRootCmd("mkdir -p /test/A/B/c");//以mkdir 创建文件夹 使用-p 递归方式 创建文件夹
+//        RootUtils.execRootCmd("mkdir -p /test/A/B/c");//以mkdir 创建文件夹 使用-p 递归方式 创建文件夹
 //        #追加文字到文件
 //        cat >>/tmp/oldboy.txt << EOF
 //        世界，你好！
 //        EOF
-        RootUtils.execRootCmd("cat >>/test/rr22.txt << EOF 你好linux 编程 EOF");//追加文件
-//        RootUtils.execRootCmd("ls -l");
+//        RootUtils.execRootCmd("cat >>/test/rr22.txt << EOF 你好linux 编程 EOF");//追加文件
+//        RootUtils.execRootCmd("ls -l");r
 
     }
 
 
+    public void onSetting(View view) {
+        final EditText text = findViewById(R.id.et_port);
+        new Thread(new Runnable() {
+            @Override
+            public void run() {
+//                final String result = RootUtils.execRootCmd("/sbin/iptables -I INPUT -p tcp --dport" + text.getText().toString() + " -j ACCEPT");
+//                RootUtils.execRootCmd("/etc/rc.d/init.d/iptables save");
+//                RootUtils.execRootCmd("/etc/init.d/iptables restart");
+//                RootUtils.execRootCmd("/sbin/iptables -L -n");
+                //设置adb无线连接端口号
+                RootUtils.execRootCmd("setprop service.adb.tcp.port "+text.getText().toString());
+                RootUtils.execRootCmd("stop adbd");
+                final String result = RootUtils.execRootCmd("start adbd");
+                Log.d("rootDemo",result+"");
+                runOnUiThread(new Runnable() {
+                    @Override
+                    public void run() {
+                        Toast.makeText(MainActivity.this,"Result:"+result,Toast.LENGTH_LONG).show();
+                    }
+                });
+            }
+        }).start();
+    }
 }
