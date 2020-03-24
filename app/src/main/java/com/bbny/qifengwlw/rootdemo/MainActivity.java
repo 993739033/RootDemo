@@ -1,21 +1,34 @@
 package com.bbny.qifengwlw.rootdemo;
 
+import android.content.Context;
+import android.net.ConnectivityManager;
+import android.net.NetworkInfo;
+import android.net.wifi.WifiInfo;
+import android.net.wifi.WifiManager;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.View;
 import android.widget.EditText;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import java.io.DataOutputStream;
 import java.io.IOException;
+import java.net.InetAddress;
+import java.net.NetworkInterface;
+import java.net.SocketException;
+import java.util.ArrayList;
+import java.util.Collections;
 
 public class MainActivity extends AppCompatActivity {
-
+    TextView tv_ip;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+        tv_ip = findViewById(R.id.tv_ip);
+        initIp();
         //当前应用的代码执行目录
         RootUtils.upgradeRootPermission(getPackageCodePath());
 //        RootUtils.execRootCmd("cd /root/data");
@@ -55,9 +68,66 @@ public class MainActivity extends AppCompatActivity {
 
     }
 
+    public void initIp() {
+        tv_ip.setText("当前IP: "+getIp());
+    }
+
+    public String getIp() {
+        String ip = null;
+        ConnectivityManager conMann = (ConnectivityManager)
+                this.getSystemService(Context.CONNECTIVITY_SERVICE);
+        NetworkInfo mobileNetworkInfo = conMann.getNetworkInfo(ConnectivityManager.TYPE_MOBILE);
+        NetworkInfo wifiNetworkInfo = conMann.getNetworkInfo(ConnectivityManager.TYPE_WIFI);
+
+        if (mobileNetworkInfo.isConnected()) {
+            ip = getLocalIpAddress();
+            System.out.println("本地ip-----"+ip);
+        }else if(wifiNetworkInfo.isConnected())
+        {
+            WifiManager wifiManager = (WifiManager) getApplicationContext().getSystemService(Context.WIFI_SERVICE);
+            WifiInfo wifiInfo = wifiManager.getConnectionInfo();
+            int ipAddress = wifiInfo.getIpAddress();
+            ip = intToIp(ipAddress);
+            System.out.println("wifi_ip地址为------"+ip);
+        }
+        return ip;
+    }
+
+    public String getLocalIpAddress() {
+        try {
+            String ipv4 = null;
+            ArrayList<NetworkInterface> nilist = Collections.list(NetworkInterface.getNetworkInterfaces());
+            for (NetworkInterface ni: nilist)
+            {
+                ArrayList<InetAddress>  ialist = Collections.list(ni.getInetAddresses());
+                for (InetAddress address: ialist){
+                    if (!address.isLoopbackAddress())
+                    {
+                        return ipv4;
+                    }
+                }
+
+            }
+
+        } catch (SocketException ex) {
+            Log.e("localip", ex.toString());
+        }
+        return null;
+    }
+
+    public static String intToIp(int ipInt) {
+        StringBuilder sb = new StringBuilder();
+        sb.append(ipInt & 0xFF).append(".");
+        sb.append((ipInt >> 8) & 0xFF).append(".");
+        sb.append((ipInt >> 16) & 0xFF).append(".");
+        sb.append((ipInt >> 24) & 0xFF);
+        return sb.toString();
+    }
+
 
     public void onSetting(View view) {
         final EditText text = findViewById(R.id.et_port);
+        initIp();
         new Thread(new Runnable() {
             @Override
             public void run() {

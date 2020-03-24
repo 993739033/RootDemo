@@ -4,8 +4,14 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
+    android:orientation="vertical"
     tools:context="com.bbny.qifengwlw.rootdemo.MainActivity">
 
+    <TextView
+        android:text="当前ip值:"
+        android:id="@+id/tv_ip"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content" />
     <EditText
         android:id="@+id/et_port"
         android:layout_width="200dp"
